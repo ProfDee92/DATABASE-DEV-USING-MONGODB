@@ -1,0 +1,42 @@
+% Below are the MongoDB queries implemented on the Paris-collection of the Tourpedia-Dataset 
+% Adedayo S. Olowolayemo & Raplhel U. Onofiok (2023)
+
+%FIND QUERIES
+
+% 1.	Task: Give the name of the places whose category is “accommodation”:
+Query: db.paris.find({"category":"accommodation"}, {"_id":0, "name":1})
+
+2.	Task: Name and phone number of places with a phone number entered
+Query: db.paris.find({"contact.phone":{"$exists": true}}, {"_id":0, "name":1, "contact.phone":1})
+3.	Task: Name and contacts of places with “website and “foursquare” provided:
+Query: db.paris.find({"contact.website":{"$exists": true},"contact.Foursquare":{"$ne": null}},{"name":1, "_id": 0, "contact":1})
+4.	Task: Name of places whose name contains “hotel”. Pay attention to cases.
+Query: db.paris.find({"name":{"$regex":"hotel"}},{"_id":0, "name":1})
+5.	Task: Name and service of places offering 5 services.
+Query: db.paris.find({"services":{$size:5}},{"_id":0, "name":1, "services":1})
+6.	Task: Categories of places with atleast a rating of 4 or more
+Query: db.paris.find({"reviews.rating":{"$gte":4}},{"_id":0, "name":1, "reviews.rating":1, "category":1})
+
+7.	Task: GPS coordinates of places whose address contains “Rue de Rome”
+Query: db.paris.find({"location.address":{"$regex":"Rue de Rome"}},{"_id":0, "location.coord":1})
+ 
+Distinct Queries
+8.	Task: Distinct list of categories
+Query: db.paris.distinct("category")
+9.	Task: Distinct list of services
+Query: db.paris.distinct("services", {"services":{"$ne": null}})
+
+10.	Task: For each “poi” category place name, give the number of reviews whose source (reviews.source) is “Facebook”. Sort in descending order
+Query:db.paris.aggregate(([{$match:{category:"poi"}},{$project:{_id:0,name:1,category:1,num_facebook_reviews:{$size:{$filter:{input:"$reviews",as:" review", cond:{$eq: ["$$review.source","Facebook"]}}}}}},{$sort:{num_facebook_reviews:-1}}]))
+
+11.	Task: For each place in the “restaurant” category, give the average rating and the number of comments.
+Query: db.paris.aggregate([{$match: {"category":"restaurant"}},{$project: {"_id":0,"name":1,num_ratings:{$size:"$reviews.rating"},avg_rating:{$avg:"$reviews.rating"}}}])
+
+
+Lookup Function
+12.	Task: Implement the $Lookup command and show its execution through one query on the ‘Paris’ database.
+Query: db.paris.aggregate([ {$match: {"location.city": { $ne: null }}},{$lookup: {from: "paris", let: { currentCity: "$location.city" }, pipeline: [{$match: {$expr: {$and: [{ $eq: [ "$location.city", "$$currentCity" ] }, { $ne: [ "$_id", "$$ROOT._id" ] } ]}} },{ $project: {
+
+
+
+
